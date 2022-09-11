@@ -1,0 +1,6 @@
+[submodule "mos-boot"]
+	path = mos-boot
+	url = git@github.com:blueOkiris/mos-boot.git
+[submodule "mos-kernel"]
+	path = mos-kernel
+	url = git@github.com:blueOkiris/mos-kernel.git
