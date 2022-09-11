@@ -12,5 +12,9 @@ A 64-bit Desktop OS with a exokernel-like architecture, allowing many parts of t
     2. Install the platform: `rustup target add x86_64-unknwon-none`
     3. Install the nightly toolchain for it: `rustup toolchain install nightly --target=x86_64-unknown-none`
 3. Install `nasm` and `make`
-4. Build with `make`
+4. Build with `make` (add `DEBUG=1` to build with debug symbols)
+
+## Testing
+
+Test with qemu: `qemu-system-x86_64 cyubos.flp`
 
