@@ -3,10 +3,7 @@
 
 # Options
 
-## Assembly Build options
-AS :=				nasm
-
-## Cargo build options
+## Cargo build options for kernel
 RUSTC :=			cargo
 ifeq ($(DEBUG),)
 RUSTC_FLAGS :=		+nightly \
@@ -20,19 +17,10 @@ RUSTC_FLAGS :=		+nightly \
 					--target=x86_64-unknown-none \
 					-- -C code-model=kernel -Z plt=y
 endif
+RUST_SRC :=			$(wildcard mos-kernel/src/*.rs)
 
-## Stage 1 bootloader options
-STG1_SRC :=			$(wildcard boot/stage1/*.asm)
-STG1_INC :=			-Iboot/stage1
-STG1_AS_FLAGS :=	-f bin
+## Bootloader options
 
-## Stage 2 bootloader options
-STG2_SRC :=			$(wildcard boot/stage2/*.asm)
-STG2_INC :=			-Iboot/stage2
-STG2_AS_FLAGS :=	-f elf64
-
-## Rust kernel options
-RUST_SRC :=			$(wildcard kernel/src/*.rs)
 
 ## Main binary
 OBJNAME :=			cyubos.flp
@@ -46,35 +34,36 @@ all: $(OBJNAME)
 
 .PHONY: clean
 clean:
-	rm -rf *.bin
-	rm -rf *.o
-	rm -rf kernel/target
-	rm -rf kernel/Cargo.lock
+	$(MAKE) -c mos-boot clean
+	rm -rf mos-kernel/target
+	rm -rf mos-kernel/Cargo.lock
 	rm -rf *.tmp
 	rm -rf *.flp
 
 ### The binaries making up the final thing
 
-stage1.bin: $(STG1_SRC)
+stage1.bin: $(wildcard mos-boot/stage1/*.asm)
 ifeq ($(DEBUG),)
-	$(AS) $(STG1_AS_FLAGS) $(STG1_INC) -o $@ boot/stage1/stage1.asm
+	$(MAKE) -C mos-boot
 else
-	$(AS) -g $(STG1_AS_FLAGS) $(STG1_INC) -o $@ boot/stage1/stage1.asm
+	$(MAKE) -C mos-boot DEBUG=1
 endif
+	cp mos-boot/$@ $@
 
-stage2.o: $(STG2_SRC)
+stage2.o: $(wildcard mos-boot/stage2/*.asm)
 ifeq ($(DEBUG),)
-	$(AS) $(STG2_AS_FLAGS) $(STG2_INC) -o $@ boot/stage2/stage2.asm
+	$(MAKE) -C mos-boot
 else
-	$(AS) -g $(STG2_AS_FLAGS) $(STG2_INC) -o $@ boot/stage2/stage2.asm
+	$(MAKE) -C mos-boot DEBUG=1
 endif
+	cp mos-boot/$@ $@
 
 kernel.o: $(RUST_SRC)
-	cd kernel; cargo $(RUSTC_FLAGS)
+	cd mos-kernel; cargo $(RUSTC_FLAGS)
 ifeq ($(DEBUG),)
-	cp kernel/target/x86_64-unknown-none/release/libcyub_os_kernel.a $@
+	cp mos-kernel/target/x86_64-unknown-none/release/libcyub_os_kernel.a $@
 else
-	cp kernel/target/x86_64-unknown-none/debug/libcyub_os_kernel.a $@
+	cp mos-kernel/target/x86_64-unknown-none/debug/libcyub_os_kernel.a $@
 endif
 
 kernel.bin: stage2.o kernel.o
@@ -84,3 +73,4 @@ kernel.bin: stage2.o kernel.o
 $(OBJNAME): stage1.bin kernel.bin
 	rm -rf $@
 	cat $^ >> $@
+
