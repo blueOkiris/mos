@@ -38,6 +38,8 @@ clean:
 	rm -rf mos-kernel/target
 	rm -rf mos-kernel/Cargo.lock
 	rm -rf *.tmp
+	rm -rf *.bin
+	rm -rf *.o
 	rm -rf *.flp
 
 ### The binaries making up the final thing
