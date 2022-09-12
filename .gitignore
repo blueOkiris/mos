@@ -9,3 +9,6 @@ target/
 # Build junk
 *.tmp
 *.flp
+*.elf
+*.sym
+
