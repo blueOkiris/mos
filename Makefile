@@ -5,18 +5,11 @@
 
 ## Cargo build options for kernel
 RUSTC :=			cargo
-ifeq ($(DEBUG),)
 RUSTC_FLAGS :=		+nightly \
 					rustc \
 					--release \
 					--target=x86_64-unknown-none \
 					-- -C code-model=kernel -Z plt=y
-else
-RUSTC_FLAGS :=		+nightly \
-					rustc \
-					--target=x86_64-unknown-none \
-					-- -C code-model=kernel -Z plt=y
-endif
 RUST_SRC :=			$(wildcard mos-kernel/src/*.rs)
 
 ## Bootloader options
@@ -41,6 +34,8 @@ clean:
 	rm -rf *.bin
 	rm -rf *.o
 	rm -rf *.flp
+	rm -rf *.elf
+	rm -rf *.sym
 
 ### The binaries making up the final thing
 
@@ -62,14 +57,13 @@ endif
 
 kernel.o: $(RUST_SRC)
 	cd mos-kernel; cargo $(RUSTC_FLAGS)
-ifeq ($(DEBUG),)
 	cp mos-kernel/target/x86_64-unknown-none/release/libcyub_os_kernel.a $@
-else
-	cp mos-kernel/target/x86_64-unknown-none/debug/libcyub_os_kernel.a $@
-endif
 
-kernel.bin: stage2.o kernel.o
+kernel.elf: stage2.o kernel.o
 	ld -Tlink.ld
+
+kernel.bin: kernel.elf
+	objcopy -O binary $< $@
 
 ## Main targets
 $(OBJNAME): stage1.bin kernel.bin
