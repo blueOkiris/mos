@@ -34,7 +34,7 @@ all: $(OBJNAME)
 
 .PHONY: clean
 clean:
-	$(MAKE) -c mos-boot clean
+	$(MAKE) -C mos-boot clean
 	rm -rf mos-kernel/target
 	rm -rf mos-kernel/Cargo.lock
 	rm -rf *.tmp
