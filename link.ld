@@ -1,4 +1,4 @@
-OUTPUT_FORMAT(binary)
+OUTPUT_FORMAT(elf64-x86-64)
 
 ENTRY(_start)
 
@@ -8,7 +8,7 @@ INPUT(
 )
 
 OUTPUT(
-    kernel.bin
+    kernel.elf
 )
 
 SECTIONS {
